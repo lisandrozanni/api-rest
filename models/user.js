@@ -14,7 +14,7 @@ const UserSchema = new Schema({
   lastLogin: Date
 });
 
-UserSchema.pre('save', next => {
+UserSchema.pre('save', function(next) {
   let user = this;
 
   if (!user.isModified('password')) return next();
@@ -31,7 +31,14 @@ UserSchema.pre('save', next => {
   });
 });
 
-UserSchema.methods.gravatar = () => {
+UserSchema.methods.comparePassword = function (candidatePassword, cb) {
+  bcrypt.compare(candidatePassword, this.password, (err, isMatch) => {
+    cb(err, isMatch);
+  });
+}
+
+UserSchema.methods.gravatar = function(size) {
+  if (!size) size = 200;
   if (!this.email) return 'https://gravar.com/?s=200&d=retro';
 
   const md5 = crypto.createHash('md5').update(this.email).digest('hex');
